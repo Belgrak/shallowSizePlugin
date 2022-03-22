@@ -11,6 +11,7 @@ import org.jetbrains.kotlin.ir.builders.irInt
 import org.jetbrains.kotlin.ir.builders.irReturn
 import org.jetbrains.kotlin.ir.types.*
 import org.jetbrains.kotlin.ir.util.functions
+import org.jetbrains.kotlin.ir.util.properties
 
 const val DEFAULT_SIZE = 8
 
@@ -36,17 +37,17 @@ val Meta.GenerateShallowSize: CliPlugin
                 Transform.replace(
                     replacing = declaration.element,
                     newDeclaration = """
-                            |$`@annotations` $kind $name $`(typeParameters)` $`(params)` : $superTypes"{
+                            |$`@annotations` $kind $name $`(typeParameters)` $`(params)` $superTypes {
                             |   $body
-                            |   fun void shallowSize(): Int 
-                            | } """.`class`.syntheticScope
+                            |   fun shallowSize(): Int = 0
+                            | } """.`class`
                 )
             },
             irClass { clazz ->
                 if (clazz.isData) {
                     var sumOfSized = 0
-                    for (element in clazz.superTypes) {
-                        sumOfSized += element.byteSize()
+                    for (element in clazz.properties) {
+                        sumOfSized += element.backingField?.type?.byteSize() ?: 0
                     }
                     clazz.functions.find { it.name.toString() == "shallowSize" }?.let { shallowSize ->
                         shallowSize.body = DeclarationIrBuilder(pluginContext, shallowSize.symbol).irBlockBody {
