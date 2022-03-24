@@ -5,6 +5,7 @@ import arrow.meta.Meta
 import arrow.meta.invoke
 import arrow.meta.quotes.Transform
 import arrow.meta.quotes.classDeclaration
+import org.jetbrains.kotlin.backend.common.ir.allParametersCount
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
 import org.jetbrains.kotlin.ir.builders.irBlockBody
 import org.jetbrains.kotlin.ir.builders.irInt
@@ -26,7 +27,7 @@ import org.jetbrains.kotlin.ir.util.functions
 import org.jetbrains.kotlin.ir.util.properties
 
 const val DEFAULT_SIZE = 8
-const val BOOLEAN_SIZE = 1
+const val BOOLEAN_SIZE = 4
 const val UNIT_SIZE = 8
 
 fun IrType.byteSize(): Int {
@@ -63,11 +64,12 @@ val Meta.GenerateShallowSize: CliPlugin
                     for (element in clazz.properties) {
                         sumOfSized += element.backingField?.type?.byteSize() ?: 0
                     }
-                    clazz.functions.find { it.name.toString() == "shallowSize" }?.let { shallowSize ->
-                        shallowSize.body = DeclarationIrBuilder(pluginContext, shallowSize.symbol).irBlockBody {
-                            +irReturn(irInt(sumOfSized))
-                        }
-                    }
+                    clazz.functions.find { it.name.toString() == "shallowSize" && it.allParametersCount == 0 }
+                        ?.let { shallowSize ->
+                            shallowSize.body = DeclarationIrBuilder(pluginContext, shallowSize.symbol).irBlockBody {
+                                +irReturn(irInt(sumOfSized))
+                            }
+                        } ?: throw NoSuchMethodError("shallowSize function not found")
                 }
                 clazz
             }
