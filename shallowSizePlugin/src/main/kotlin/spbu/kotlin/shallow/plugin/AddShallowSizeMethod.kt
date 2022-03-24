@@ -5,7 +5,6 @@ import arrow.meta.Meta
 import arrow.meta.invoke
 import arrow.meta.quotes.Transform
 import arrow.meta.quotes.classDeclaration
-import org.jetbrains.kotlin.backend.common.ir.allParametersCount
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
 import org.jetbrains.kotlin.ir.builders.irBlockBody
 import org.jetbrains.kotlin.ir.builders.irInt
@@ -64,7 +63,7 @@ val Meta.GenerateShallowSize: CliPlugin
                     for (element in clazz.properties) {
                         sumOfSized += element.backingField?.type?.byteSize() ?: 0
                     }
-                    clazz.functions.find { it.name.toString() == "shallowSize" && it.allParametersCount == 1 }
+                    clazz.functions.find { it.name.toString() == "shallowSize" && it.valueParameters.isEmpty() }
                         ?.let { shallowSize ->
                             shallowSize.body = DeclarationIrBuilder(pluginContext, shallowSize.symbol).irBlockBody {
                                 +irReturn(irInt(sumOfSized))
