@@ -5,6 +5,7 @@ val jvmTargetVersion: String by project
 plugins {
     kotlin("jvm")
     java
+    id("io.gitlab.arturbosch.detekt") version "1.19.0"
 }
 
 group = "spbu.kotlin.class.shallowSize"
@@ -12,6 +13,10 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+}
+
+dependencies{
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.19.0")
 }
 
 allprojects {
