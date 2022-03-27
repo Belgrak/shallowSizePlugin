@@ -53,7 +53,9 @@ val Meta.GenerateShallowSize: CliPlugin
                     newDeclaration = """
                             |$`@annotations` $kind $name $`(typeParameters)` $`(params)` $superTypes {
                             |   $body
-                            |   fun shallowSize(): Int = 0
+                            |   fun shallowSize(): Int {
+                            |       throw NoSuchMethodException("shallowSize function not implemented")
+                            |   }
                             | } """.`class`
                 )
             },
