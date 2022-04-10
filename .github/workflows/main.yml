@@ -1,5 +1,5 @@
 name: simple CI
-on: [push, pull_request]
+on: [ push, pull_request ]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -22,7 +22,7 @@ jobs:
         if: success() || failure()
         with:
           name: Tests
-          path: shalowSizePluginTest/build/test-results/test/**/TEST-*.xml
+          path: shalowSizePluginTest/build/test-results/junit-platform
           reporter: java-junit
 
 
@@ -37,4 +37,4 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: Build report
-          path: build/reports/detekt/
+          path: build/reports/detekt/detekt.html
