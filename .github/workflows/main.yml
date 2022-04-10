@@ -9,8 +9,32 @@ jobs:
       - name: Run build
         run: ./gradlew build
 
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
       - name: Run tests
         run: ./gradlew test
 
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Tests
+          path: shalowSizePluginTest/build/reports/tests/
+          reporter: java-junit
+
+
+  detekt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
       - name: Run detekt
         run: ./gradlew detekt
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Build report
+          path: build/reports/detekt/

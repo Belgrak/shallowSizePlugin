@@ -9,6 +9,7 @@ import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
 import org.jetbrains.kotlin.ir.builders.irBlockBody
 import org.jetbrains.kotlin.ir.builders.irInt
 import org.jetbrains.kotlin.ir.builders.irReturn
+import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.isByte
 import org.jetbrains.kotlin.ir.types.isChar
@@ -28,6 +29,7 @@ import org.jetbrains.kotlin.ir.util.properties
 const val DEFAULT_SIZE = 8
 const val BOOLEAN_SIZE = 1
 const val UNIT_SIZE = 8
+const val FUNCTION_NAME = "shallowSize"
 
 fun IrType.byteSize(): Int {
     return when {
@@ -44,6 +46,10 @@ fun IrType.byteSize(): Int {
     }
 }
 
+fun IrSimpleFunction.isShallowSizeFunction(): Boolean {
+    return this.name.toString() == "shallowSize" && this.valueParameters.isEmpty()
+}
+
 val Meta.GenerateShallowSize: CliPlugin
     get() = "Generate shallowSize method" {
         meta(
@@ -53,19 +59,16 @@ val Meta.GenerateShallowSize: CliPlugin
                     newDeclaration = """
                             |$`@annotations` $kind $name $`(typeParameters)` $`(params)` $superTypes {
                             |   $body
-                            |   fun shallowSize(): Int {
-                            |       throw NoSuchMethodException("shallowSize function not implemented")
+                            |   fun $FUNCTION_NAME(): Int {
+                            |       throw NotImplementedError("shallowSize function not implemented")
                             |   }
                             | } """.`class`
                 )
             },
             irClass { clazz ->
                 if (clazz.isData) {
-                    var sumOfSized = 0
-                    for (element in clazz.properties) {
-                        sumOfSized += element.backingField?.type?.byteSize() ?: 0
-                    }
-                    clazz.functions.find { it.name.toString() == "shallowSize" && it.valueParameters.isEmpty() }
+                    val sumOfSized = clazz.properties.map { it.backingField?.type?.byteSize() ?: 0 }.sum()
+                    clazz.functions.find { it.isShallowSizeFunction() }
                         ?.let { shallowSize ->
                             shallowSize.body = DeclarationIrBuilder(pluginContext, shallowSize.symbol).irBlockBody {
                                 +irReturn(irInt(sumOfSized))
