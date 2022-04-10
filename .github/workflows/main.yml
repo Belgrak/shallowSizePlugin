@@ -22,7 +22,7 @@ jobs:
         if: success() || failure()
         with:
           name: Tests
-          path: shalowSizePluginTest/build/reports/tests/
+          path: shalowSizePluginTest/build/test-results/test/**/TEST-*.xml
           reporter: java-junit
 
 
