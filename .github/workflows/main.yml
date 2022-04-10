@@ -22,7 +22,7 @@ jobs:
         if: success() || failure()
         with:
           name: Tests
-          path: shalowSizePluginTest/build/test-results/junit-platform
+          path: shalowSizePluginTest/build/test-results/shallowSizeTest
           reporter: java-junit
 
 

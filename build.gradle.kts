@@ -19,6 +19,11 @@ dependencies{
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.19.0")
 }
 
+detekt {
+    source = files("shallowSizePlugin/src/main/kotlin", "shalowSizePluginTest/src/test/kotlin")
+    autoCorrect = true
+}
+
 allprojects {
     apply {
         plugin("kotlin")
