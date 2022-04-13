@@ -31,23 +31,23 @@ const val BOOLEAN_SIZE = 1
 const val UNIT_SIZE = 8
 const val FUNCTION_NAME = "shallowSize"
 
-fun IrType.byteSize(): Int {
-    return when {
-        isChar() -> Char.SIZE_BYTES
-        isByte() || isUByte() -> Byte.SIZE_BYTES
-        isShort() || isUShort() -> Short.SIZE_BYTES
-        isInt() -> Int.SIZE_BYTES
-        isLong() || isULong() -> Long.SIZE_BYTES
-        isFloat() -> Float.SIZE_BYTES
-        isDouble() -> Double.SIZE_BYTES
-        isBoolean() -> BOOLEAN_SIZE
-        isUnit() -> UNIT_SIZE
-        else -> DEFAULT_SIZE
-    }
+fun IrType.byteSize() = when {
+    isChar() -> Char.SIZE_BYTES
+    isByte() -> Byte.SIZE_BYTES
+    isUByte() -> UByte.SIZE_BYTES
+    isShort() -> Short.SIZE_BYTES
+    isUShort() -> UShort.SIZE_BYTES
+    isInt() -> Int.SIZE_BYTES
+    isLong() || isULong() -> Long.SIZE_BYTES
+    isFloat() -> Float.SIZE_BYTES
+    isDouble() -> Double.SIZE_BYTES
+    isBoolean() -> BOOLEAN_SIZE
+    isUnit() -> UNIT_SIZE
+    else -> DEFAULT_SIZE
 }
 
 fun IrSimpleFunction.isShallowSizeFunction(): Boolean {
-    return this.name.toString() == "shallowSize" && this.valueParameters.isEmpty()
+    return this.name.toString() == FUNCTION_NAME && this.valueParameters.isEmpty()
 }
 
 val Meta.GenerateShallowSize: CliPlugin
@@ -68,11 +68,11 @@ val Meta.GenerateShallowSize: CliPlugin
             irClass { clazz ->
                 if (clazz.isData) {
                     val sumOfSized = clazz.properties.map { it.backingField?.type?.byteSize() ?: 0 }.sum()
-                    clazz.functions.find { it.isShallowSizeFunction() }
-                        ?.let { shallowSize ->
-                            shallowSize.body = DeclarationIrBuilder(pluginContext, shallowSize.symbol).irBlockBody {
-                                +irReturn(irInt(sumOfSized))
-                            }
+                    val shallowSizeFunction = clazz.functions.find { it.isShallowSizeFunction() }
+                        ?: throw NoSuchMethodException("$FUNCTION_NAME not found")
+                    shallowSizeFunction.body =
+                        DeclarationIrBuilder(pluginContext, shallowSizeFunction.symbol).irBlockBody {
+                            +irReturn(irInt(sumOfSized))
                         }
                 }
                 clazz

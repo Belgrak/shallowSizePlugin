@@ -23,7 +23,7 @@ jobs:
           path: shalowSizePluginTest/build/reports/tests/test
 
 
-  detekt:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -33,5 +33,5 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: Build report
+          name: Detekt report
           path: build/reports/detekt/detekt.html

@@ -6,6 +6,8 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 
 const val DEFAULT_SIZE = 8
+const val BOOLEAN_SIZE = 1
+const val FUNCTION_NAME = "shallowSize"
 
 class AddShallowSizeMethodTest {
     @ParameterizedTest(name = "case [{index}]: {0}")
@@ -13,16 +15,16 @@ class AddShallowSizeMethodTest {
     fun shallowSizeTest(testClass: Any, result: Int) {
         require(testClass::class.isData) { "testClass should be data class" }
 
-        testClass::class.members.find { it.name == "shallowSize" }?.let {
+        testClass::class.members.find { it.name == FUNCTION_NAME }?.let {
             assertEquals(result, it.call(testClass))
-        }
+        } ?: throw NoSuchMethodException("$FUNCTION_NAME not found")
     }
 
     private companion object {
         @JvmStatic
         fun addTestData() = listOf(
             Arguments.of(BaseClass("Hello"), DEFAULT_SIZE),
-            Arguments.of(InternalClass(true), 1),
+            Arguments.of(InternalClass(true), BOOLEAN_SIZE),
             Arguments.of(InheritInterfaces(3), Int.SIZE_BYTES),
             Arguments.of(InheritClass(3), Int.SIZE_BYTES),
             Arguments.of(NoBackField('c'), 2),
